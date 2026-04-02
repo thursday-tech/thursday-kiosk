@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Thursday — The Thrift Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #E53935;
+    --white: #FFFFFF;
+    --black: #0A0A0A;
+    --video-width: min(430px, 43vw);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--black);
+    font-family: 'DM Sans', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .kiosk {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ── LEFT: NARROW VIDEO STRIP ───────────────── */
+  .video-strip {
+    width: var(--video-width);
+    flex-shrink: 0;
+    position: relative;
+    background: var(--black);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .video-inner {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .video-inner video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .video-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #0d0000 0%, #4a0000 55%, var(--red) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .play-ring {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.35);
+    display: flex; align-items: center; justify-content: center;
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  .play-ring::after {
+    content: '';
+    width: 0; height: 0;
+    border-top: 18px solid transparent;
+    border-bottom: 18px solid transparent;
+    border-left: 30px solid white;
+    margin-left: 7px;
+  }
+  @keyframes pulse {
+    0%,100% { transform:scale(1); opacity:.55; }
+    50%      { transform:scale(1.1); opacity:1; }
+  }
+
+  .placeholder-label {
+    font-size: 12px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.38);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .video-gradient {
+    position: absolute;
+    bottom: 0; left: 0; right: 0; height: 45%;
+    background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .video-brand {
+    position: absolute;
+    bottom: 14px; left: 0; right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+  }
+
+  .video-brand-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    color: white;
+    letter-spacing: 0.06em;
+    line-height: 1;
+  }
+
+  .video-brand-sub {
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .video-footer {
+    background: var(--red);
+    padding: 13px 12px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: white;
+    animation: blink 1.3s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity:1; } 50% { opacity:.25; }
+  }
+
+  .live-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: white;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .video-handle {
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── RIGHT: FORM PANEL ──────────────────────── */
+  .form-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: white;
+    border-left: 3px solid var(--red);
+    min-width: 0;
+  }
+
+  /* Tab header */
+  .form-header {
+    background: var(--red);
+    flex-shrink: 0;
+    display: flex;
+    align-items: stretch;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 13px 18px 11px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    position: relative;
+    transition: background 0.2s;
+    text-align: left;
+  }
+
+  .tab-btn + .tab-btn {
+    border-left: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .tab-btn.active {
+    background: rgba(0,0,0,0.18);
+  }
+
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: white;
+  }
+
+  .tab-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 19px;
+    color: white;
+    letter-spacing: 0.07em;
+    line-height: 1;
+  }
+
+  .tab-sub {
+    font-size: 10px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.72);
+    letter-spacing: 0.02em;
+  }
+
+  /* Forms */
+  .form-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tally-frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    background: white;
+  }
+
+  .tally-frame.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* Ticker */
+  .ticker-bar {
+    background: var(--black);
+    height: 30px;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .ticker-track {
+    display: flex;
+    white-space: nowrap;
+    animation: ticker 26s linear infinite;
+  }
+
+  .ticker-item {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 12px;
+    color: rgba(255,255,255,0.32);
+    letter-spacing: 0.12em;
+    padding: 0 26px;
+  }
+  .ticker-item span { color: var(--red); margin-right: 5px; }
+
+  @keyframes ticker {
+    from { transform:translateX(0); }
+    to   { transform:translateX(-50%); }
+  }
+
+  /* ── IDLE SCREEN ────────────────────────────── */
+  .idle-overlay {
+    position: fixed; inset: 0;
+    background: var(--red);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+    z-index: 100;
+    overflow: hidden;
+  }
+
+  .idle-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* Floating background words */
+  .idle-bg-words {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .idle-bg-word {
+    position: absolute;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 11vw;
+    color: rgba(255,255,255,0.06);
+    white-space: nowrap;
+    text-transform: lowercase;
+    animation: float-word 12s ease-in-out infinite;
+  }
+
+  .idle-bg-word:nth-child(1) { top: 5%;  left: -5%; animation-delay: 0s;   animation-duration: 14s; }
+  .idle-bg-word:nth-child(2) { top: 28%; left: 30%; animation-delay: 2s;   animation-duration: 11s; font-size: 8vw; }
+  .idle-bg-word:nth-child(3) { top: 52%; left: -8%; animation-delay: 4s;   animation-duration: 16s; }
+  .idle-bg-word:nth-child(4) { top: 72%; left: 20%; animation-delay: 1s;   animation-duration: 13s; font-size: 9vw; }
+  .idle-bg-word:nth-child(5) { top: 88%; left: 55%; animation-delay: 3s;   animation-duration: 15s; font-size: 7vw; }
+
+  @keyframes float-word {
+    0%,100% { transform: translateX(0px) translateY(0px); }
+    33%      { transform: translateX(18px) translateY(-12px); }
+    66%      { transform: translateX(-12px) translateY(8px); }
+  }
+
+  /* Main content */
+  .idle-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .idle-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(80px, 13vw, 172px);
+    color: white;
+    letter-spacing: -0.03em;
+    line-height: 1.0;
+    text-align: center;
+    animation: idle-breathe 4s ease-in-out infinite;
+  }
+  @keyframes idle-breathe {
+    0%,100% { transform: scale(1);     opacity: 1; }
+    50%      { transform: scale(1.012); opacity: 0.9; }
+  }
+
+  .idle-divider {
+    width: 48px;
+    height: 2px;
+    background: rgba(255,255,255,0.4);
+    animation: divider-grow 3s ease-in-out infinite;
+  }
+  @keyframes divider-grow {
+    0%,100% { width: 48px; opacity: 0.4; }
+    50%      { width: 80px; opacity: 0.9; }
+  }
+
+  .idle-cta {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 300;
+    font-size: clamp(16px, 2.2vw, 26px);
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 0.01em;
+    text-align: center;
+    animation: cta-fade 2.5s ease-in-out infinite;
+  }
+  @keyframes cta-fade {
+    0%,100% { opacity: 0.6; }
+    50%      { opacity: 1; }
+  }
+
+  .idle-sub {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 300;
+    font-size: clamp(11px, 1.2vw, 14px);
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.18em;
+    text-transform: lowercase;
+  }
+
+  .idle-th-logo {
+    width: clamp(100px, 12vw, 160px);
+    height: auto;
+    opacity: 0.95;
+    display: block;
+    margin: 0 auto;
+    animation: idle-breathe 4s ease-in-out infinite;
+    animation-delay: 0.5s;
+  }
+  .idle-corner {
+    position: absolute;
+    width: 40px; height: 40px;
+    border-color: rgba(255,255,255,0.25);
+    border-style: solid;
+    animation: corner-pulse 3s ease-in-out infinite;
+  }
+  .idle-corner.tl { top: 32px; left: 32px; border-width: 2px 0 0 2px; }
+  .idle-corner.tr { top: 32px; right: 32px; border-width: 2px 2px 0 0; }
+  .idle-corner.bl { bottom: 32px; left: 32px; border-width: 0 0 2px 2px; }
+  .idle-th-logo {
+    position: absolute;
+    bottom: 36px;
+    right: 36px;
+    width: 44px;
+    opacity: 0.7;
+    animation: corner-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes corner-pulse {
+    0%,100% { opacity: 0.25; width: 40px; height: 40px; }
+    50%      { opacity: 0.7;  width: 52px; height: 52px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- IDLE ATTRACT SCREEN -->
+<div class="idle-overlay" id="idleOverlay">
+
+  <!-- animated background words -->
+  <div class="idle-bg-words">
+    <div class="idle-bg-word">thrift</div>
+    <div class="idle-bg-word">discover</div>
+    <div class="idle-bg-word">thursday</div>
+    <div class="idle-bg-word">vintage</div>
+    <div class="idle-bg-word">shop</div>
+  </div>
+
+  <!-- corner brackets -->
+  <div class="idle-corner tl"></div>
+  <div class="idle-corner tr"></div>
+  <div class="idle-corner bl"></div>
+  <div class="idle-corner br"></div>
+
+  <!-- main content -->
+  <div class="idle-content">
+    <div class="idle-logo">tap to start<br>thrifting</div>
+    <div class="idle-divider"></div>
+    <img class="idle-th-logo" src="th_logo_white.png" alt="thursday" onerror="this.src='th logo white.png'">
+  </div>
+
+</div>
+
+<!-- MAIN KIOSK -->
+<div class="kiosk">
+
+  <!-- LEFT: NARROW VIDEO STRIP -->
+  <div class="video-strip">
+    <div class="video-inner">
+      <video autoplay muted loop playsinline webkit-playsinline
+        src="demo.mov"
+        style="width:100%;height:100%;object-fit:cover;display:block;"
+        onerror="this.style.display='none';document.getElementById('vidFallback').style.display='flex';">
+      </video>
+      <div id="vidFallback" class="video-placeholder" style="display:none;">
+        <div class="play-ring"></div>
+        <div class="placeholder-label">Tap to load video</div>
+      </div>
+      <div class="video-gradient"></div>
+      <div class="video-brand">
+        <div class="video-brand-name">thursday</div>
+        <div class="video-brand-sub">The Thrift Club</div>
+      </div>
+    </div>
+    <div class="video-footer">
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        <div class="live-text">Now Open</div>
+      </div>
+      <div class="video-handle">@thursdaythriftclub</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: FORM PANEL -->
+  <div class="form-panel">
+
+    <div class="form-header">
+      <button class="tab-btn active" id="tabWaitlist" onclick="switchTab('waitlist')">
+        <div class="tab-title">Join the Waitlist</div>
+        <div class="tab-sub">Be first when we launch</div>
+      </button>
+      <button class="tab-btn" id="tabIntern" onclick="switchTab('intern')">
+        <div class="tab-title">Marketing Intern</div>
+        <div class="tab-sub">Join the founding team</div>
+      </button>
+    </div>
+
+    <div class="form-wrap">
+      <iframe
+        id="frameWaitlist"
+        class="tally-frame visible"
+        src="https://tally.so/embed/nW1G2R?alignLeft=1&transparentBackground=1&dynamicHeight=1"
+        frameborder="0"
+        title="Thursday Waitlist"
+        scrolling="auto"
+      ></iframe>
+
+      <iframe
+        id="frameIntern"
+        class="tally-frame"
+        src="https://tally.so/embed/LZda5J?transparentBackground=1&dynamicHeight=1"
+        frameborder="0"
+        title="Marketing Intern Application"
+        scrolling="auto"
+      ></iframe>
+    </div>
+
+    <div class="ticker-bar">
+      <div class="ticker-track" id="tickerTrack"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function switchTab(tab) {
+    const isWaitlist = tab === 'waitlist';
+    document.getElementById('tabWaitlist').classList.toggle('active', isWaitlist);
+    document.getElementById('tabIntern').classList.toggle('active', !isWaitlist);
+    document.getElementById('frameWaitlist').classList.toggle('visible', isWaitlist);
+    document.getElementById('frameIntern').classList.toggle('visible', !isWaitlist);
+  }
+
+  // Ticker
+  const items = [
+    "5,000+ on the waitlist",
+    "$35K GMV across 15 pop-ups",
+    "1.4% conversion · 6× higher than competitors",
+    "100 founding sellers committed",
+    "AI-powered thrift discovery",
+    "New drops every Thursday",
+    "$0 CAC · 100% organic",
+    "Scan any item in 8 seconds",
+    "600+ beta users",
+    "1st Place McGinnis Venture Competition",
+  ];
+  const track = document.getElementById('tickerTrack');
+  [...items, ...items].forEach(txt => {
+    const el = document.createElement('div');
+    el.className = 'ticker-item';
+    el.innerHTML = `<span>◆</span>${txt}`;
+    track.appendChild(el);
+  });
+
+  // Idle
+  const overlay = document.getElementById('idleOverlay');
+  let idleTimer;
+  function resetIdle() {
+    overlay.classList.remove('visible');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => overlay.classList.add('visible'), 90000);
+  }
+  overlay.addEventListener('click', resetIdle);
+  overlay.addEventListener('touchstart', resetIdle);
+  document.addEventListener('touchstart', resetIdle);
+  document.addEventListener('mousemove', resetIdle);
+  resetIdle();
+
+  // Prevent scroll bounce except inside form
+  document.addEventListener('touchmove', e => {
+    if (e.target.closest('.form-wrap')) return;
+    e.preventDefault();
+  }, { passive: false });
+
+  // Wake lock
+  async function keepAwake() {
+    try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e) {}
+  }
+  keepAwake();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') keepAwake();
+  });
+</script>
+</body>
+</html>
