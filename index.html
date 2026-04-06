@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Thursday — The Thrift Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+
+  /* ── RESET & BASE ───────────────────────────── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #0A0A0A;
+    font-family: 'DM Sans', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  :root {
+    --red: #E53935;
+    --white: #FFFFFF;
+    --black: #0A0A0A;
+    --video-width: min(430px, 43vw);
+  }
+
+  /* ── MAIN LAYOUT ────────────────────────────── */
+  .kiosk {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ── LEFT: VIDEO STRIP ──────────────────────── */
+  .video-strip {
+    width: var(--video-width);
+    flex-shrink: 0;
+    position: relative;
+    background: var(--black);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .video-inner {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .video-inner video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .video-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #0d0000 0%, #4a0000 55%, var(--red) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .play-ring {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.35);
+    display: flex; align-items: center; justify-content: center;
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  .play-ring::after {
+    content: '';
+    width: 0; height: 0;
+    border-top: 18px solid transparent;
+    border-bottom: 18px solid transparent;
+    border-left: 30px solid white;
+    margin-left: 7px;
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); opacity: .55; }
+    50%      { transform: scale(1.1); opacity: 1; }
+  }
+
+  .placeholder-label {
+    font-size: 12px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.38);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .video-gradient {
+    position: absolute;
+    bottom: 0; left: 0; right: 0; height: 45%;
+    background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .video-brand {
+    position: absolute;
+    bottom: 14px; left: 0; right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+  }
+
+  .video-brand-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    color: white;
+    letter-spacing: 0.06em;
+    line-height: 1;
+  }
+
+  .video-brand-sub {
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .video-footer {
+    background: var(--red);
+    padding: 13px 12px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: white;
+    animation: blink 1.3s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity: 1; } 50% { opacity: .25; }
+  }
+
+  .live-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: white;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .video-handle {
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── RIGHT: FORM PANEL ──────────────────────── */
+  .form-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: white;
+    border-left: 3px solid var(--red);
+    min-width: 0;
+  }
+
+  .form-header {
+    background: var(--red);
+    flex-shrink: 0;
+    display: flex;
+    align-items: stretch;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 13px 18px 11px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    position: relative;
+    transition: background 0.2s;
+    text-align: left;
+  }
+
+  .tab-btn + .tab-btn {
+    border-left: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .tab-btn.active {
+    background: rgba(0,0,0,0.18);
+  }
+
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: white;
+  }
+
+  .tab-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 19px;
+    color: white;
+    letter-spacing: 0.07em;
+    line-height: 1;
+  }
+
+  .tab-sub {
+    font-size: 10px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.72);
+    letter-spacing: 0.02em;
+  }
+
+  .form-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tally-frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    background: white;
+  }
+
+  .tally-frame.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* Reset button */
+  .reset-bar {
+    background: var(--black);
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .reset-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    padding: 7px 16px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .reset-btn:hover, .reset-btn:active {
+    background: rgba(229,57,53,0.15);
+    border-color: var(--red);
+  }
+
+  .reset-btn-icon {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+  }
+
+  .reset-btn-text {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .reset-btn:hover .reset-btn-text,
+  .reset-btn:active .reset-btn-text,
+  .reset-btn:hover .reset-btn-icon,
+  .reset-btn:active .reset-btn-icon {
+    color: white;
+  }
+
+  .reset-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── TICKER ─────────────────────────────────── */
+  .ticker-bar {
+    background: var(--black);
+    height: 30px;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .ticker-track {
+    display: flex;
+    white-space: nowrap;
+    animation: ticker 26s linear infinite;
+  }
+
+  .ticker-item {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 12px;
+    color: rgba(255,255,255,0.32);
+    letter-spacing: 0.12em;
+    padding: 0 26px;
+  }
+  .ticker-item span { color: var(--red); margin-right: 5px; }
+
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ══════════════════════════════════════════════
+     IDLE STATE CSS
+     ══════════════════════════════════════════════ */
+
+  .idle-overlay {
+    position: fixed; inset: 0;
+    background: #E53935;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+    z-index: 100;
+  }
+
+  .idle-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* Background floating words */
+  .idle-bg-words {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .idle-bg-word {
+    position: absolute;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 11vw;
+    color: rgba(255,255,255,0.11);
+    white-space: nowrap;
+    text-transform: lowercase;
+    animation: float-word 12s ease-in-out infinite;
+  }
+
+  .idle-bg-word:nth-child(1) { top: 5%;  left: -5%; animation-delay: 0s; animation-duration: 14s; }
+  .idle-bg-word:nth-child(2) { top: 28%; left: 30%; animation-delay: 2s; animation-duration: 11s; font-size: 8vw; }
+  .idle-bg-word:nth-child(3) { top: 52%; left: -8%; animation-delay: 4s; animation-duration: 16s; }
+  .idle-bg-word:nth-child(4) { top: 72%; left: 20%; animation-delay: 1s; animation-duration: 13s; font-size: 9vw; }
+  .idle-bg-word:nth-child(5) { top: 88%; left: 55%; animation-delay: 3s; animation-duration: 15s; font-size: 7vw; }
+
+  @keyframes float-word {
+    0%,100% { transform: translateX(0px) translateY(0px); }
+    33%      { transform: translateX(18px) translateY(-12px); }
+    66%      { transform: translateX(-12px) translateY(8px); }
+  }
+
+  /* Corner brackets */
+  .idle-corner {
+    position: absolute;
+    width: 40px; height: 40px;
+    border-color: rgba(255,255,255,0.25);
+    border-style: solid;
+    animation: corner-pulse 3s ease-in-out infinite;
+  }
+  .idle-corner.tl { top: 32px;    left: 32px;  border-width: 2px 0 0 2px; }
+  .idle-corner.tr { top: 32px;    right: 32px; border-width: 2px 2px 0 0; }
+  .idle-corner.bl { bottom: 32px; left: 32px;  border-width: 0 0 2px 2px; }
+  .idle-corner.br { bottom: 32px; right: 32px; border-width: 0 2px 2px 0; }
+
+  @keyframes corner-pulse {
+    0%,100% { opacity: 0.25; width: 40px; height: 40px; }
+    50%      { opacity: 0.7;  width: 52px; height: 52px; }
+  }
+
+  /* Main content layout */
+  .idle-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 60px 40px;
+  }
+
+  .idle-text-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .idle-logo-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+  }
+
+  /* Big CTA text — typewriter */
+  .idle-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(80px, 13vw, 172px);
+    color: white;
+    letter-spacing: -0.03em;
+    line-height: 1.0;
+    text-align: center;
+    min-height: 2.1em; /* reserve space so layout doesn't jump */
+  }
+
+  .idle-cursor {
+    display: inline-block;
+    width: 3px;
+    background: white;
+    margin-left: 6px;
+    vertical-align: baseline;
+    height: 0.85em;
+    position: relative;
+    top: 0.05em;
+    animation: cursor-blink 0.7s step-end infinite;
+  }
+
+  @keyframes cursor-blink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0; }
+  }
+
+  /* Divider line */
+  .idle-divider {
+    width: 48px;
+    height: 2px;
+    background: rgba(255,255,255,0.4);
+    animation: divider-grow 3s ease-in-out infinite;
+  }
+
+  @keyframes divider-grow {
+    0%,100% { width: 48px; opacity: 0.4; }
+    50%      { width: 80px; opacity: 0.9; }
+  }
+
+  /* [th] logo */
+  .idle-th-logo {
+    width: clamp(200px, 22vw, 300px);
+    height: auto;
+    opacity: 0.95;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* ══════════════════════════════════════════════
+     END IDLE STATE CSS
+     ══════════════════════════════════════════════ */
+
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     IDLE STATE HTML
+     ══════════════════════════════════════════════ -->
+<div class="idle-overlay" id="idleOverlay">
+
+  <div class="idle-bg-words">
+    <div class="idle-bg-word">thrift</div>
+    <div class="idle-bg-word">discover</div>
+    <div class="idle-bg-word">thursday</div>
+    <div class="idle-bg-word">vintage</div>
+    <div class="idle-bg-word">shop</div>
+  </div>
+
+  <div class="idle-corner tl"></div>
+  <div class="idle-corner tr"></div>
+  <div class="idle-corner bl"></div>
+  <div class="idle-corner br"></div>
+
+  <div class="idle-content">
+    <div class="idle-text-block">
+      <div class="idle-logo"><span id="typewriterText"></span><span class="idle-cursor" id="idleCursor"></span></div>
+      <div class="idle-divider"></div>
+    </div>
+    <div class="idle-logo-block">
+      <img class="idle-th-logo" src="th_logo_white.png" alt="thursday">
+    </div>
+  </div>
+
+</div>
+<!-- ══════════════════════════════════════════════
+     END IDLE STATE HTML
+     ══════════════════════════════════════════════ -->
+
+<!-- MAIN KIOSK -->
+<div class="kiosk">
+
+  <!-- LEFT: VIDEO STRIP -->
+  <div class="video-strip">
+    <div class="video-inner">
+      <video autoplay muted loop playsinline webkit-playsinline
+        src="demo.mov"
+        style="width:100%;height:100%;object-fit:cover;display:block;"
+        onerror="this.style.display='none';document.getElementById('vidFallback').style.display='flex';">
+      </video>
+      <div id="vidFallback" class="video-placeholder" style="display:none;">
+        <div class="play-ring"></div>
+        <div class="placeholder-label">Tap to load video</div>
+      </div>
+      <div class="video-gradient"></div>
+      <div class="video-brand">
+        <div class="video-brand-name">thursday</div>
+        <div class="video-brand-sub">The Thrift Club</div>
+      </div>
+    </div>
+    <div class="video-footer">
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        <div class="live-text">Now Open</div>
+      </div>
+      <div class="video-handle">@thursdaythriftclub</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: FORM PANEL -->
+  <div class="form-panel">
+
+    <div class="form-header">
+      <button class="tab-btn active" id="tabWaitlist" onclick="switchTab('waitlist')">
+        <div class="tab-title">Join the Waitlist</div>
+        <div class="tab-sub">Be first when we launch</div>
+      </button>
+      <button class="tab-btn" id="tabIntern" onclick="switchTab('intern')">
+        <div class="tab-title">Marketing Intern</div>
+        <div class="tab-sub">Join the founding team</div>
+      </button>
+    </div>
+
+    <div class="form-wrap">
+      <iframe
+        id="frameWaitlist"
+        class="tally-frame visible"
+        src="https://tally.so/embed/nW1G2R?alignLeft=1&transparentBackground=1&dynamicHeight=1"
+        frameborder="0"
+        title="Thursday Waitlist"
+        scrolling="auto"
+      ></iframe>
+
+      <iframe
+        id="frameIntern"
+        class="tally-frame"
+        src="https://tally.so/embed/LZda5J?transparentBackground=1&dynamicHeight=1"
+        frameborder="0"
+        title="Marketing Intern Application"
+        scrolling="auto"
+      ></iframe>
+    </div>
+
+    <div class="reset-bar">
+      <div class="reset-label">Form submitted? Tap to start a new response.</div>
+      <button class="reset-btn" onclick="resetActiveForm()">
+        <span class="reset-btn-icon">↺</span>
+        <span class="reset-btn-text">New Response</span>
+      </button>
+    </div>
+
+    <div class="ticker-bar">
+      <div class="ticker-track" id="tickerTrack"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ── Form reset ─────────────────────────────────
+  function resetActiveForm() {
+    const waitlistSrc = "https://tally.so/embed/nW1G2R?alignLeft=1&transparentBackground=1&dynamicHeight=1";
+    const internSrc   = "https://tally.so/embed/LZda5J?transparentBackground=1&dynamicHeight=1";
+    const wf = document.getElementById('frameWaitlist');
+    const inf = document.getElementById('frameIntern');
+    // Reload whichever frame is currently visible
+    if (wf.classList.contains('visible')) {
+      wf.src = ''; wf.src = waitlistSrc;
+    } else {
+      inf.src = ''; inf.src = internSrc;
+    }
+  }
+
+  // ── Tab switching ──────────────────────────────
+  function switchTab(tab) {
+    const isWaitlist = tab === 'waitlist';
+    document.getElementById('tabWaitlist').classList.toggle('active', isWaitlist);
+    document.getElementById('tabIntern').classList.toggle('active', !isWaitlist);
+    document.getElementById('frameWaitlist').classList.toggle('visible', isWaitlist);
+    document.getElementById('frameIntern').classList.toggle('visible', !isWaitlist);
+  }
+
+  // ── Ticker ─────────────────────────────────────
+  const items = [
+    "5,000+ on the waitlist",
+    "$35K GMV across 15 pop-ups",
+    "1.4% conversion · 6× higher than competitors",
+    "100 founding sellers committed",
+    "AI-powered thrift discovery",
+    "New drops every Thursday",
+    "$0 CAC · 100% organic",
+    "Scan any item in 8 seconds",
+    "600+ beta users",
+    "1st Place McGinnis Venture Competition",
+  ];
+  const track = document.getElementById('tickerTrack');
+  [...items, ...items].forEach(txt => {
+    const el = document.createElement('div');
+    el.className = 'ticker-item';
+    el.innerHTML = `<span>◆</span>${txt}`;
+    track.appendChild(el);
+  });
+
+  // ── Idle — 30 second timeout ───────────────────
+  const overlay = document.getElementById('idleOverlay');
+  let idleTimer;
+  function resetIdle() {
+    overlay.classList.remove('visible');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => overlay.classList.add('visible'), 30000);
+  }
+  overlay.addEventListener('click', resetIdle);
+  overlay.addEventListener('touchstart', resetIdle);
+  document.addEventListener('touchstart', resetIdle);
+  document.addEventListener('mousemove', resetIdle);
+  resetIdle();
+
+  // ── Prevent scroll bounce outside form ────────
+  document.addEventListener('touchmove', e => {
+    if (e.target.closest('.form-wrap')) return;
+    e.preventDefault();
+  }, { passive: false });
+
+  // ── Typewriter ─────────────────────────────────
+  const typeLines = ['tap to start', 'thrifting'];
+  const typeEl    = document.getElementById('typewriterText');
+  const cursor    = document.getElementById('idleCursor');
+  const TYPE_SPEED   = 60;   // ms per character
+  const DISPLAY_HOLD = 20000; // ms to hold after fully typed (20 seconds)
+  const ERASE_SPEED  = 30;   // ms per character erase
+
+  let typeLoop;
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  async function runTypewriter() {
+    while (true) {
+      // Type line 1
+      let line1 = '';
+      for (let i = 0; i < typeLines[0].length; i++) {
+        line1 += typeLines[0][i];
+        typeEl.innerHTML = line1;
+        await sleep(TYPE_SPEED);
+      }
+      await sleep(120);
+      // Type line 2
+      let line2 = '';
+      for (let i = 0; i < typeLines[1].length; i++) {
+        line2 += typeLines[1][i];
+        typeEl.innerHTML = line1 + '<br>' + line2;
+        await sleep(TYPE_SPEED);
+      }
+      // Hold fully typed for 20 seconds
+      await sleep(DISPLAY_HOLD);
+      // Erase line 2
+      for (let i = line2.length; i >= 0; i--) {
+        typeEl.innerHTML = i > 0 ? line1 + '<br>' + line2.slice(0, i) : line1;
+        await sleep(ERASE_SPEED);
+      }
+      await sleep(80);
+      // Erase line 1
+      for (let i = line1.length; i >= 0; i--) {
+        typeEl.innerHTML = line1.slice(0, i);
+        await sleep(ERASE_SPEED);
+      }
+      // Brief pause before restart
+      typeEl.innerHTML = '';
+      await sleep(500);
+    }
+  }
+
+  // Start typewriter when idle screen becomes visible
+  const idleObserver = new MutationObserver(() => {
+    if (overlay.classList.contains('visible')) {
+      typeEl.innerHTML = '';
+      runTypewriter();
+    }
+  });
+  idleObserver.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+
+  async function keepAwake() {
+    try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e) {}
+  }
+  keepAwake();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') keepAwake();
+  });
+</script>
+</body>
+</html>
